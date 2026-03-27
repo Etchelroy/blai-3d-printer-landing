@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FORGEVOX — Precision 3D Manufacturing</title>
+<style>
+  /* ============================================================
+     RESET & BASE
+  ============================================================ */
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  :root {
+    --bg-primary: #0A0A0F;
+    --bg-secondary: #0F0F1A;
+    --bg-card: #12121F;
+    --bg-card-hover: #161628;
+    --accent-blue: #3B82F6;
+    --accent-cyan: #06B6D4;
+    --accent-blue-bright: #60A5FA;
+    --accent-cyan-bright: #22D3EE;
+    --text-primary: #F0F0FF;
+    --text-secondary: #9090B0;
+    --text-muted: #5555780;
+    --border: rgba(59, 130, 246, 0.15);
+    --border-hover: rgba(59, 130, 246, 0.4);
+    --glow-blue: rgba(59, 130, 246, 0.3);
+    --glow-cyan: rgba(6, 182, 212, 0.3);
+    --font: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  }
+
+  html { scroll-behavior: smooth; overflow-x: hidden; }
+
+  body {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: var(--font);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ============================================================
+     TYPOGRAPHY
+  ============================================================ */
+  h1 { font-size: clamp(52px, 8vw, 88px); font-weight: 800; line-height: 1.0; letter-spacing: -2px; }
+  h2 { font-size: clamp(36px, 5vw, 56px); font-weight: 700; line-height: 1.1; letter-spacing: -1px; }
+  h3 { font-size: clamp(20px, 2.5vw, 28px); font-weight: 600; }
+  h4 { font-size: 18px; font-weight: 600; }
+  p  { font-size: 16px; line-height: 1.75; color: var(--text-secondary); }
+
+  .gradient-text {
+    background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-cyan) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .gradient-text-warm {
+    background: linear-gradient(135deg, #F59E0B 0%, #EF4444 50%, #EC4899 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* ============================================================
+     SCROLLBAR
+  ============================================================ */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg-primary); }
+  ::-webkit-scrollbar-thumb { background: var(--accent-blue); border-radius: 3px; }
+
+  /* ============================================================
+     UTILITY
+  ============================================================ */
+  .container { max-width: 1280px; margin: 0 auto; padding: 0 40px; }
+  .section { padding: 120px 0; }
+  .section-label {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 12px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--accent-cyan); margin-bottom: 20px;
+  }
+  .section-label::before {
+    content: ''; display: block; width: 20px; height: 2px;
+    background: var(--accent-cyan);
+  }
+
+  /* ============================================================
+     MESH / GRID BACKGROUND PATTERN
+  ============================================================ */
+  .mesh-bg {
+    position: absolute; inset: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(59,130,246,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(59,130,246,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+
+  /* ============================================================
+     NAVBAR
+  ============================================================ */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    padding: 0 40px;
+    transition: all 0.4s ease;
+  }
+  nav.scrolled {
+    background: rgba(10, 10, 15, 0.92);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-inner {
+    max-width: 1280px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 72px;
+  }
+  .nav-logo {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 22px; font-weight: 800; letter-spacing: -0.5px;
+    text-decoration: none; color: var(--text-primary);
+  }
+  .nav-logo-icon {
+    width: 34px; height: 34px;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+    border-radius: 8px; display: flex; align-items: center; justify-content: center;
+    font-size: 16px; box-shadow: 0 0 20px var(--glow-blue);
+  }
+  .nav-links {
+    display: flex; align-items: center; gap: 36px;
+    list-style: none;
+  }
+  .nav-links a {
+    color: var(--text-secondary); text-decoration: none;
+    font-size: 14px; font-weight: 500; letter-spacing: 0.3px;
+    transition: color 0.3s;
+  }
+  .nav-links a:hover { color: var(--text-primary); }
+  .nav-cta {
+    display: flex; gap: 12px; align-items: center;
+  }
+  .btn-ghost {
+    padding: 10px 22px; border-radius: 8px;
+    border: 1px solid var(--border); background: transparent;
+    color: var(--text-primary); font-size: 14px; font-weight: 600;
+    cursor: pointer; text-decoration: none;
+    transition: all 0.3s;
+  }
+  .btn-ghost:hover {
+    border-color: var(--border-hover);
+    background: rgba(59,130,246,0.08);
+    box-shadow: 0 0 20px rgba(59,130,246,0.1);
+  }
+  .btn-primary {
+    padding: 10px 22px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+    color: #fff; font-size: 14px; font-weight: 700;
+    border: none; cursor: pointer; text-decoration: none;
+    transition: all 0.3s; position: relative; overflow: hidden;
+  }
+  .btn-primary::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, var(--accent-blue-bright), var(--accent-cyan-bright));
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .btn-primary:hover::after { opacity: 1; }
+  .btn-primary span { position: relative; z-index: 1; }
+
+  /* ============================================================
+     HERO
+  ============================================================ */
+  #hero {
+    min-height: 100vh; position: relative;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    overflow: hidden; padding-top: 72px;
+  }
+
+  .hero-glow-1 {
+    position: absolute; width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(59,130,246,0.18) 0%, transparent 70%);
+    top: 10%; left: -100px; pointer-events: none;
+    animation: glow-drift-1 8s ease-in-out infinite alternate;
+  }
+  .hero-glow-2 {
+    position: absolute; width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(6,182,212,0.15) 0%, transparent 70%);
+    top: 20%; right: -80px; pointer-events: none;
+    animation: glow-drift-2 10s ease-in-out infinite alternate;
+  }
+  .hero-glow-3 {
+    position: absolute; width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 70%);
+    bottom: 10%; left: 40%; pointer-events: none;
+  }
+
+  @keyframes glow-drift-1 {
+    from { transform: translate(0,0) scale(1); }
+    to   { transform: translate(40px, 30px) scale(1.1); }
+  }
+  @keyframes glow-drift-2 {
+    from { transform: translate(0,0) scale(1); }
+    to   { transform: translate(-30px, 20px) scale(1.08); }
+  }
+
+  .hero-content {
+    position: relative; z-index: 2;
+    text-align: center; max-width: 960px;
+    padding: 0 20px;
+  }
+
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3);
+    border-radius: 100px; padding: 6px 16px;
+    font-size: 12px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--accent-blue);
+    margin-bottom: 32px;
+    animation: fade-up 0.6s ease both;
+  }
+  .hero-badge-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent-cyan);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.7); }
+  }
+
+  .hero-title {
+    animation: fade-up 0.7s 0.1s ease both;
+    margin-bottom: 28px;
+  }
+
+  .hero-subtitle {
+    font-size: clamp(17px, 2vw, 21px);
+    color: var(--text-secondary);
+    max-width: 620px; margin: 0 auto 48px;
+    animation: fade-up 0.7s 0.2s ease both;
+    line-height: 1.7;
+  }
+
+  .hero-actions {
+    display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;
+    animation: fade-up 0.7s 0.3s ease both;
+    margin-bottom: 80px;
+  }
+
+  .btn-large {
+    padding: 16px 36px; font-size: 16px; border-radius: 10px;
+  }
+
+  .btn-outline-large {
+    padding: 15px 36px; font-size: 16px; border-radius: 10px;
+    border: 1px solid var(--border); background: transparent;
+    color: var(--text-primary); font-weight: 600;
+    cursor: pointer; text-decoration: none;
+    transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn-outline-large:hover {
+    border-color: var(--border-hover);
+    background: rgba(59,130,246,0.06);
+  }
+
+  /* Hero 3D product visual */
+  .hero-product-wrap {
+    position: relative; z-index: 2;
+    animation: fade-up 0.9s 0.4s ease both;
+    width: 100%; max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .hero-product-stage {
+    position: relative;
+    background: linear-gradient(160deg, rgba(59,130,246,0.08) 0%, rgba(6,182,212,0.04) 50%, transparent 100%);
+    border: 1px solid var(--border);
+    border-radius: 24px; overflow: hidden;
+    padding: 60px 40px 40px;
+  }
+
+  .hero-product-stage::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(59,130,246,0.12) 0%, transparent 60%);
+  }
+
+  .product-float {
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    animation: float-bob 4s ease-in-out infinite;
+  }
+
+  @keyframes float-bob {
+    0%, 100% { transform: translateY(0px); }
+    50%       { transform: translateY(-18px); }
+  }
+
+  .product-float img {
+    width: 100%; max-width: 520px; height: 320px;
+    object-fit: cover; border-radius: 16px;
+    filter: drop-shadow(0 40px 80px rgba(59,130,246,0.4));
+  }
+
+  .product-glow-ring {
+    position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%);
+    width: 400px; height: 40px;
+    background: radial-gradient(ellipse, rgba(59,130,246,0.4) 0%, transparent 70%);
+    filter: blur(10px);
+    animation: float-bob 4s ease-in-out infinite;
+  }
+
+  /* Stats bar */
+  .hero-stats {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    border-top: 1px solid var(--border);
+    margin-top: 40px;
+  }
+  .hero-stat {
+    padding: 24px; text-align: center;
+    border-right: 1px solid var(--border);
+  }
+  .hero-stat:last-child { border-right: none; }
+  .hero-stat-val {
+    font-size: 32px; font-weight: 800; letter-spacing: -1px;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; display: block;
+  }
+  .hero-stat-label { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
+
+  /* ============================================================
+     MARQUEE TICKER
+  ============================================================ */
+  .marquee-section {
+    background: rgba(59,130,246,0.06);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 18px 0; overflow: hidden; position: relative;
+  }
+  .marquee-track {
+    display: flex; gap: 0;
+    animation: marquee-scroll 30s linear infinite;
+    white-space: nowrap;
+  }
+  .marquee-item {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 0 48px; font-size: 13px; font-weight: 600;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+  }
+  .marquee-dot {
+    width: 4px; height: 4px; border-radius: 50%;
+    background: var(--accent-blue);
+  }
+
+  @keyframes marquee-scroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  /* ============================================================
+     PRODUCT HIGHLIGHTS
+  ============================================================ */
+  #products { position: relative; }
+  #products .mesh-bg { opacity: 0.5; }
+
+  .product-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 28px; margin-top: 64px;
+  }
+
+  .product-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 20px; overflow: hidden;
+    position: relative;
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    cursor: pointer;
+  }
+  .product-card:hover {
+    transform: translateY(-6px);
+    border-color: var(--border-hover);
+    box-shadow: 0 24px 64px rgba(59,130,246,0.2);
+    background: var(--bg-card-hover);
+  }
+  .product-card-featured {
+    grid-column: span 2;
+    display: grid; grid-template-columns: 1fr 1fr;
+  }
+
+  .product-card-img {
+    width: 100%; height: 240px; object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+  .product-card:hover .product-card-img { transform: scale(1.03); }
+
+  .product-card-featured .product-card-img {
+    height: 100%; min-height: 320px;
+  }
+
+  .product-card-body { padding: 32px; }
+  .product-tag {
+    display: inline-block; padding: 4px 12px;
+    background: rgba(59,130,246,0.15); border-radius: 100px;
+    font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--accent-blue);
+    margin-bottom: 14px;
+  }
+  .product-card-body h3 { margin-bottom: 12px; }
+  .product-card-body p { font-size: 14px; margin-bottom: 24px; }
+  .product-specs {
+    display: flex; gap: 24px; flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+  .spec-item { text-align: left; }
+  .spec-val { font-size: 20px; font-weight: 800; color: var(--accent-cyan); display: block; }
+  .spec-label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; }
+
+  .product-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: var(--accent-blue); font-size: 14px; font-weight: 600;
+    text-decoration: none; transition: gap 0.3s;
+  }
+  .product-link:hover { gap: 10px; }
+
+  /* ============================================================
+     FEATURES
+  ============================================================ */
+  #features { position: relative; overflow: hidden; }
+
+  .features-header {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 80px; align-items: center; margin-bottom: 80px;
+  }
+  .features-header p { font-size: 18px; }
+
+  .features-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 2px; background: var(--border);
+    border: 1px solid var(--border); border-radius: 20px; overflow: hidden;
+  }
+
+  .feature-cell {
+    background: var(--bg-card); padding: 40px 36px;
+    transition: all 0.3s ease; position: relative; overflow: hidden;
+  }
+  .feature-cell::after {
+    content: ''; position: absolute;
+    bottom: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan));
+    transform: scaleX(0); transform-origin: left;
+    transition: transform 0.4s ease;
+  }
+  .feature-cell:hover { background: var(--bg-card-hover); }
+  .feature-cell:hover::after { transform: scaleX(1); }
+
+  .feature-icon {
+    width: 52px; height: 52px; border-radius: 14px;
+    background: linear-gradient(135deg, rgba(59,130,246,0.2), rgba(6,182,212,0.1));
+    border: 1px solid rgba(59,130,246,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; margin-bottom: 20px;
+    transition: all 0.3s;
+  }
+  .feature-cell:hover .feature-icon {
+    box-shadow: 0 0 20px rgba(59,130,246,0.4);
+    background: linear-gradient(135deg, rgba(59,130,246,0.3), rgba(6,182,212,0.2));
+  }
+  .feature-cell h4 { margin-bottom: 10px; }
+  .feature-cell p { font-size: 14px; }
+
+  /* ============================================================
+     TECHNOLOGY SHOWCASE
+  ============================================================ */
+  #technology { position: relative; overflow: hidden; }
+
+  .tech-showcase {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 80px; align-items: center; margin-top: 64px;
+  }
+
+  .tech-visual {
+    position: relative;
+  }
+  .tech-img-main {
+    width: 100%; border-radius: 20px;
+    border: 1px solid var(--border);
+    box-shadow: 0 40px 100px rgba(59,130,246,0.2);
+  }
+  .tech-img-badge {
+    position: absolute; bottom: -20px; right: -20px;
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 20px 24px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    min-width: 180px;
+  }
+  .tech-badge-val {
+    font-size: 36px; font-weight: 800;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; display: block; line-height: 1;
+  }
+  .tech-badge-label { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+
+  .tech-content { }
+  .tech-content p { font-size: 18px; margin-bottom: 36px; line-height: 1.8; }
+
+  .tech-list { list-style: none; display: flex; flex-direction: column; gap: 16px; }
+  .tech-list li {
+    display: flex; gap: 16px; align-items: flex-start;
+    padding: 20px; background: var(--bg-card);
+    border: 1px solid var(--border); border-radius: 12px;
+    transition: all 0.3s;
+  }
+  .tech-list li:hover {
+    border-color: var(--border-hover);
+    background: var(--bg-card-hover);
+    transform: translateX(6px);
+  }
+  .tech-list-icon {
+    width: 36px; height: 36px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+  }
+  .tech-list-text h4 { margin-bottom: 4px; }
+  .tech-list-text p { font-size: 13px; }
+
+  /* Progress bars */
+  .tech-metrics { margin-top: 40px; display: flex; flex-direction: column; gap: 16px; }
+  .metric-row { }
+  .metric-header {
+    display: flex; justify-content: space-between;
+    font-size: 13px; margin-bottom: 8px;
+    color: var(--text-secondary);
+  }
+  .metric-header span:last-child { color: var(--accent-cyan); font-weight: 700; }
+  .metric-bar {
+    height: 6px; background: rgba(255,255,255,0.06);
+    border-radius: 3px; overflow: hidden;
+  }
+  .metric-fill {
+    height: 100%; border-radius: 3px;
+    background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan));
+    transform: scaleX(0); transform-origin: left;
+    transition: transform 1.2s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .metric-fill.animated { transform: scaleX(1); }
+
+  /* ============================================================
+     TESTIMONIALS
+  ============================================================ */
+  #testimonials { position: relative; overflow: hidden; }
+
+  .testimonials-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 24px; margin-top: 64px;
+  }
+
+  .testimonial-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border); border-radius: 20px;
+    padding: 36px; position: relative;
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .testimonial-card:hover {
+    transform: translateY(-6px);
+    border-color: var(--border-hover);
+    box-shadow: 0 24px 60px rgba(59,130,246,0.15);
+  }
+  .testimonial-card::before {
+    content: '\201C'; position: absolute; top: 24px; right: 30px;
+    font-size: 80px; line-height: 1; color: rgba(59,130,246,0.1);
+    font-family: Georgia, serif;
+  }
+
+  .stars {
+    display: flex; gap: 3px; margin-bottom: 20px;
+  }
+  .star { color: #F59E0B; font-size: 14px; }
+
+  .testimonial-text {
+    font-size: 15px; color: var(--text-secondary);
+    line-height: 1.7; margin-bottom: 28px;
+  }
+
+  .testimonial-author {
+    display: flex; gap: 14px; align-items: center;
+  }
+  .author-avatar {
+    width: 46px; height: 46px; border-radius: 50%;
+    border: 2px solid var(--border);
+    object-fit: cover;
+  }
+  .author-name { font-size: 15px; font-weight: 700; }
+  .author-role { font-size: 12px; color: var(--text-secondary); }
+
+  /* ============================================================
+     CTA BAND
+  ============================================================ */
+  #cta {
+    position: relative; overflow: hidden;
+    padding: 120px 0;
+  }
+  .cta-bg {
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg,
+      rgba(59,130,246,0.12) 0%,
+      rgba(6,182,212,0.08) 50%,
+      rgba(139,92,246,0.08) 100%
+    );
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .cta-glow {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 800px; height: 400px;
+    background: radial-gradient(ellipse, rgba(59,130,246,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .cta-content {
+    position: relative; z-index: 2;
+    text-align: center; max-width: 720px; margin: 0 auto;
+  }
+  .cta-content h2 { margin-bottom: 20px; }
+  .cta-content p { font-size: 18px; margin-bottom: 48px; }
+
+  .cta-actions {
+    display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;
+  }
+
+  .btn-xl {
+    padding: 18px 44px; font-size: 17px; border-radius: 12px;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+    color: #fff; font-weight: 800; border: none; cursor: pointer;
+    text-decoration: none; position: relative; overflow: hidden;
+    display: inline-block;
+    box-shadow: 0 0 40px rgba(59,130,246,0.4);
+    transition: all 0.3s;
+  }
+  .btn-xl:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 60px rgba(59,130,246,0.6);
+  }
+
+  .btn-xl-outline {
+    padding: 17px 44px; font-size: 17px; border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.04);
+    color: var(--text-primary); font-weight: 700;
+    cursor: pointer; text-decoration: none;
+    transition: all 0.3s; display: inline-block;
+  }
+  .btn-xl-outline:hover {
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(255,255,255,0.3);
+  }
+
+  .cta-trust {
+    display: flex; gap: 32px; justify-content: center;
+    align-items: center; margin-top: 48px; flex-wrap: wrap;
+  }
+  .trust-item {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-secondary);
+  }
+  .trust-icon { color: var(--accent-cyan); font-size: 16px; }
+
+  /* ============================================================
+     FOOTER
+  ============================================================ */
+  footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    padding: 80px 0 40px;
+  }
+
+  .footer-grid {
+    display: grid; grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 60px; margin-bottom: 60px;
+  }
+
+  .footer-brand p {
+    font-size: 14px; margin-top: 16px; max-width: 280px; line-height: 1.7;
+  }
+  .footer-social {
+    display: flex; gap: 12px; margin-top: 24px;
+  }
+  .social-btn {
+    width: 36px; height: 36px; border-radius: 8px;
+    border: 1px solid var(--border); background: transparent;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-secondary); font-size: 14px;
+    text-decoration: none; cursor: pointer;
+    transition: all 0.3s;
+  }
+  .social-btn:hover {
+    border-color: var(--border-hover);
+    background: rgba(59,130,246,0.1);
+    color: var(--accent-blue);
+  }
+
+  .footer-col h5 {
+    font-size: 13px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--text-secondary);
+    margin-bottom: 20px;
+  }
+  .footer-links { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .footer-links a {
+    color: var(--text-secondary); text-decoration: none; font-size: 14px;
+    transition: color 0.3s;
+  }
+  .footer-links a:hover { color: var(--text-primary); }
+
+  .footer-bottom {
+    border-top: 1px solid var(--border); padding-top: 32px;
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 16px;
+  }
+  .footer-bottom p { font-size: 13px; }
+
+  /* ============================================================
+     SCROLL ANIMATIONS
+  ============================================================ */
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(30px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  .reveal {
+    opacity: 0; transform: translateY(40px);
+    transition: all 0.7s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .reveal.visible {
+    opacity: 1; transform: translateY(0);
+  }
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.2s; }
+  .reveal-delay-3 { transition-delay: 0.3s; }
+  .reveal-delay-4 { transition-delay: 0.4s; }
+
+  /* ============================================================
+     COMPARISON TABLE
+  ============================================================ */
+  .comparison-section { margin-top: 80px; }
+  .comparison-table {
+    width: 100%; border-collapse: collapse;
+    background: var(--bg-card); border-radius: 16px;
+    overflow: hidden; border: 1px solid var(--border);
+  }
+  .comparison-table th {
+    padding: 20px 28px; text-align: left;
+    background: rgba(59,130,246,0.08);
+    font-size: 13px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+  }
+  .comparison-table th:first-child { color: var(--text-secondary); }
+  .comparison-table th.highlight { color: var(--accent-cyan); }
+  .comparison-table td {
+    padding: 18px 28px; border-bottom: 1px solid rgba(59,130,246,0.06);
+    font-size: 14px; color: var(--text-secondary);
+  }
+  .comparison-table td.highlight { color: var(--text-primary); font-weight: 600; }
+  .comparison-table tr:last-child td { border-bottom: none; }
+  .comparison-table tr:hover td { background: rgba(59,130,246,0.03); }
+  .check { color: var(--accent-cyan); }
+  .cross { color: #444; }
+
+  /* ============================================================
+     MOBILE RESPONSIVE
+  ============================================================ */
+  @media (max-width: 1024px) {
+    .product-grid { grid-template-columns: 1fr; }
+    .product-card-featured { grid-column: span 1; grid-template-columns: 1fr; }
+    .product-card-featured .product-card-img { height: 220px; }
+    .features-grid { grid-template-columns: 1fr 1fr; }
+    .tech-showcase { grid-template-columns: 1fr; gap: 48px; }
+    .tech-img-badge { bottom: 16px; right: 16px; }
+    .testimonials-grid { grid-template-columns: 1fr 1fr; }
+    .footer-grid { grid-template-columns: 1fr 1fr; }
+    .features-header { grid-template-columns: 1fr; gap: 24px; }
+  }
+
+  @media (max-width: 768px) {
+    .container { padding: 0 20px; }
+    .section { padding: 80px 0; }
+    .nav-links { display: none; }
+    .hero-actions { flex-direction: column; align-items: center; }
+    .hero-stats { grid-template-columns: 1fr; }
+    .hero-stat { border-right: none; border-bottom: 1px solid var(--border); }
+    .features-grid { grid-template-columns: 1fr; }
+    .testimonials-grid { grid-template-columns: 1fr; }
+    .cta-actions { flex-direction: column; align-items: center; }
+    .footer-grid { grid-template-columns: 1fr; gap: 36px; }
+    .footer-bottom { flex-direction: column; text-align: center; }
+  }
+
+  /* Number counter animation */
+  .counter { display: inline-block; }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     NAVBAR
+============================================================ -->
+<nav id="navbar">
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">
+      <div class="nav-logo-icon">⬡</div>
+      FORGEVOX
+    </a>
+    <ul class="nav-links">
+      <li><a href="#products">Products</a></li>
+      <li><a href="#features">Features</a></li>
+      <li><a href="#technology">Technology</a></li>
+      <li><a href="#testimonials">Reviews</a></li>
+    </ul>
+    <div class="nav-cta">
+      <a href="#" class="btn-ghost">Sign In</a>
+      <a href="#cta" class="btn-primary"><span>Get Started</span></a>
+    </div>
+  </div>
+</nav>
+
+<!-- ============================================================
+     HERO
+============================================================ -->
+<section id="hero">
+  <div class="mesh-bg"></div>
+  <div class="hero-glow-1"></div>
+  <div class="hero-glow-2"></div>
+  <div class="hero-glow-3"></div>
+
+  <div class="hero-content">
+    <div class="hero-badge">
+      <div class="hero-badge-dot"></div>
+      Next-Gen Manufacturing · 2025
+    </div>
+    <h1 class="hero-title">
+      Forge the
+      <span class="gradient-text">Future</span><br>
+      in Three Dimensions
+    </h1>
+    <p class="hero-subtitle">
+      Industrial-grade precision 3D printing that transforms raw concept into flawless reality.
+      FORGEVOX systems deliver micron-level accuracy at production scale.
+    </p>
+    <div class="hero-actions">
+      <a href="#products" class="btn-primary btn-large"><span>Explore Systems →</span></a>
+      <a href="#technology" class="btn-outline-large">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"/><polygon points="10,8 16,12 10,16"/>
+        </svg>
+        Watch Demo
+      </a>
+    </div>
+  </div>
+
+  <div class="hero-product-wrap container">
+    <div class="hero-product-stage">
+      <div class="product-float">
+        <img src="https://picsum.photos/seed/3dprinter-industrial/900/400" alt="FORGEVOX X1 Pro 3D Printer">
+        <div class="product-glow-ring"></div>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <span class="hero-stat-val" data-count="25" data-suffix="μm">25μm</span>
+          <span class="hero-stat-label">Layer Resolution</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-stat-val" data-count="500" data-suffix="mm/s">500mm/s</span>
+          <span class="hero-stat-label">Print Speed</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-stat-val" data-count="99.8" data-suffix="%">99.8%</span>
+          <span class="hero-stat-label">Dimensional Accuracy</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     MARQUEE TICKER
+============================================================ -->
+<div class="marquee-section">
+  <div class="marquee-track" id="marqueeTrack">
+    <span class="marquee-item"><span class="marquee-dot"></span>Aerospace Certified</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Medical Grade Materials</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>ISO 9001:2015 Compliant</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Multi-Material Support</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Cloud-Connected Manufacturing</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>AI-Powered Slicing Engine</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Zero-Waste Architecture</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Enterprise Fleet Management</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Aerospace Certified</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Medical Grade Materials</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>ISO 9001:2015 Compliant</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Multi-Material Support</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Cloud-Connected Manufacturing</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>AI-Powered Slicing Engine</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Zero-Waste Architecture</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Enterprise Fleet Management</span>
+  </div>
+</div>
+
+<!-- ============================================================
+     PRODUCT HIGHLIGHTS
+============================================================ -->
+<section id="products" class="section">
+  <div class="container">
+    <div class="mesh-bg"></div>
+
+    <div class="reveal">
+      <span class="section-label">Product Line</span>
+    </div>
+    <div class="reveal reveal-delay-1">
+      <h2>Engineered for <span class="gradient-text">Extremes</span></h2>
+    </div>
+    <div class="reveal reveal-delay-2" style="max-width: 560px; margin-top: 16px;">
+      <p>Every FORGEVOX system is built from the ground up to push the boundaries of what additive manufacturing can achieve — in labs, factories, and studios worldwide.</p>
+    </div>
+
+    <div class="product-grid">
+
+      <!-- Featured card -->
+      <div class="product-card product-card-featured reveal">
+        <img src="https://picsum.photos/seed/industrial-3d-pro/700/500" alt="FORGEVOX X1 Pro" class="product-card-img">
+        <div class="product-card-body">
+          <span class="product-tag">⭐ Flagship</span>
+          <h3>FORGEVOX X1 Pro</h3>
+          <p>Our most advanced industrial system featuring dual extrusion, heated chamber up to 300°C, and AI-assisted calibration. Trusted by Fortune 500 manufacturers.</p>
+          <div class="product-specs">
+            <div class="spec-item">
+              <span class="spec-val">25μm</span>
+              <span class="spec-label">Resolution</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-val">500×500</span>
+              <span class="spec-label">Build Volume (mm)</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-val">300°C</span>
+              <span class="spec-label">Max Temp</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-val">0.02mm</span>
+              <span class="spec-label">Repeatability</span>
+            </div>
+          </div>
+          <a href="#" class="product-link">View X1 Pro Specs →</a>
+        </div>
+      </div>
+
+      <!-- Standard card 1 -->
+      <div class="product-card reveal reveal-delay-1">
+        <img src="https://picsum.photos/seed/desktop-printer-studio/600/300" alt="FORGEVOX Studio" class="product-card-img">
+        <div class="product-card-body">
+          <span class="product-tag">Professional</span>
+          <h3>FORGEVOX Studio</h3>
+          <p>Precision desktop manufacturing for design studios and R&D teams. Compact footprint, uncompromised quality.</p>
+          <div class="product-specs">
+            <div class="spec-item">
+              <span class="spec-val">50μm</span>
+              <span class="spec-label">Resolution</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-val">280×280</span>
+              <span class="spec-label">Build Volume (mm)</span>
+            </div>
+          </div>
+          <a href="#" class="product-link">View Studio Specs →</a>
+        </div>
+      </div>
+
+      <!-- Standard card 2 -->
+      <div class="product-card reveal reveal-delay-2">
+        <img src="https://picsum.photos/seed/metal-3d-printer/600/300" alt="FORGEVOX Metal" class="product-card-img">
+        <div class="product-card-body">
+          <span class="product-tag" style="background:rgba(245,158,11,0.15);color:#F59E0B;">Metal Series</span>
+          <h3>FORGEVOX Metal X</h3>
+          <p>Direct Metal Laser Sintering (DMLS) for aerospace-grade titanium, stainless steel, and Inconel components.</p>
+          <div class="product-specs">
+            <div class="spec-item">
+              <span class="spec-val">20μm</span>
+              <span class="spec-label">Resolution</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-val">1600°C</span>
+              <span class="spec-label">Max Sinter Temp</span>
+            </div>
+          </div>
+          <a href="#" class="product-link" style="color:#F59E0B;">View Metal X Specs →</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     FEATURES
+============================================================ -->
+<section id="features" class="section" style="background: var(--bg-secondary);">
+  <div class="container">
+
+    <div class="features-header">
+      <div>
+        <div class="reveal"><span class="section-label">Core Capabilities</span></div>
+        <div class="reveal reveal-delay-1"><h2>Built to <span class="gradient-text">Outperform</span></h2></div>
+      </div>
+      <div class="reveal reveal-delay-2">
+        <p>From the heating elements to the firmware stack, every component in a FORGEVOX machine has been re-engineered for maximum reliability, speed, and print fidelity.</p>
+      </div>
+    </div>
+
+    <div class="features-grid reveal">
+      <div class="feature-cell">
+        <div class="feature-icon">⚡</div>
+        <h4>HyperCore Motion</h4>
+        <p>Linear rail system with 0.001mm positional repeatability driven by 32-bit closed-loop servo motors.</p>
+      </div>
+      <div class="feature-cell">
+        <div class="feature-icon">🧠</div>
+        <h4>AI Auto-Calibration</h4>
+        <p>Machine vision and on-board AI automatically detect and correct layer deviations in real time during printing.</p>
+      </div>
+      <div class="feature-cell">
+        <div class="feature-icon">🌡️</div>
+        <h4>ThermoSync Chamber</h4>
+        <p>Precisely controlled build chamber eliminates warping and delamination even in high-performance engineering polymers.</p>
+      </div>
+      <div class="feature-cell">
+        <div class="feature-icon">📡</div>
+        <h4>Fleet Cloud Connect</h4>
+        <p>Monitor, manage, and queue jobs across hundreds of printers via the ForgeCloud platform from anywhere on Earth.</p>
+      </div>
+      <div class="feature-cell">
+        <div class="feature-icon">🔩</div>
+        <h4>Multi-Material Matrix</h4>
+        <p>Support for 40+ engineering materials including PEEK, Ultem, carbon-fiber composites, and flexible TPU.</p>
+      </div>
+      <div class="feature-cell">
+        <div class="feature-icon">♻️</div>
+        <h4>EcoFeed System</h4>
+        <p>Dual-spool auto-switching with waste monitoring reduces material consumption by up to 34% vs. competitors.</p>
+      </div>
+    </div>
+
+    <!-- Comparison table -->
+    <div class="comparison-section reveal">
+      <h3 style="margin-bottom: 32px;">How We <span class="gradient-text">Compare</span></h3>
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th class="highlight">FORGEVOX X1 Pro</th>
+            <th>Competitor A</th>
+            <th>Competitor B</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>AI Auto-Calibration</td>
+            <td class="highlight check">✔ Standard</td>
+            <td class="cross">✖ Not Available</td>
+            <td>⟳ Add-on</td>
+          </tr>
+          <tr>
+            <td>Layer Resolution</td>
+            <td class="highlight">25μm</td>
+            <td>100μm</td>
+            <td>50μm</td>
+          </tr>
+          <tr>
+            <td>Max Print Speed</td>
+            <td class="highlight">500 mm/s</td>
+            <td>200 mm/s</td>
+            <td>300 mm/s</td>
+          </tr>
+          <tr>
+            <td>Heated Chamber</td>
+            <td class="highlight check">✔ 300°C</td>
+            <td class="cross">✖ None</td>
+            <td class="cross">✖ None</td>
+          </tr>
+          <tr>
+            <td>Cloud Fleet Management</td>
+            <td class="highlight check">✔ Unlimited</td>
+            <td>Up to 10</td>
+            <td class="cross">✖ Not Available</td>
+          </tr>
+          <tr>
+            <td>Engineering Material Support</td>
+            <td class="highlight">40+ materials</td>
+            <td>12 materials</td>
+            <td>20 materials</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================================
+     TECHNOLOGY SHOWCASE
+============================================================ -->
+<section id="technology" class="section">
+  <div class="container">
+    <div class="reveal"><span class="section-label">Under the Hood</span></div>
+    <div class="reveal reveal-delay-1"><h2>Technology That <span class="gradient-text">Redefines</span> Precision</h2></div>
+
+    <div class="tech-showcase">
+
+      <div class="tech-visual reveal">
+        <img src="https://picsum.photos/seed/technology-manufacturing-detail/620/480" alt="Technology Detail" class="tech-img-main">
+        <div class="tech-img-badge">
+          <span class="tech-badge-val">10B+</span>
+          <div class="tech-badge-label">Print moves calculated<br>per session</div>
+        </div>
+      </div>
+
+      <div class="tech-content reveal reveal-delay-1">
+        <p>Our proprietary <strong style="color:var(--text-primary)">ForgeCore™</strong> motion controller processes over 10 billion coordinate instructions per print session, synchronized across six independent axes for sub-micron layering consistency.</p>
+
+        <ul class="tech-list">
+          <li>
+            <div class="tech-list-icon">🔬</div>
+            <div class="tech-list-text">
+              <h4>Interferometric Feedback Loop</h4>
+              <p>Laser interferometers measure printhead position 50,000 times per second, correcting drift before it affects the model.</p>
+            </div>
+          </li>
+          <li>
+            <div class="tech-list-icon">💡</div>
+            <div class="tech-list-text">
+              <h4>Photonic Cure Engine</h4>
+              <p>In our resin systems, adaptive UV wavelength modulation ensures uniform cure depth regardless of geometry complexity.</p>
+            </div>
+          </li>
+          <li>
+            <div class="tech-list-icon">🌐</div>
+            <div class="tech-list-text">
+              <h4>Distributed Slicing AI</h4>
+              <p>Cloud-offloaded AI slicer processes 1M+ polygon models in seconds, generating tool paths optimized for material, speed, and surface finish.</p>
+            </div>
+          </li>
+        </ul>
+
+        <div class="tech-metrics" id="metricsContainer">
+          <div class="metric-row">
+            <div class="metric-header"><span>Motion Accuracy</span><span>99.98%</span></div>
+            <div class="metric-bar"><div class="metric-fill" style="--w: 0.9998"></div></div>
+          </div>
+          <div class="metric-row">
+            <div class="metric-header"><span>Thermal Stability</span><span>±0.5°C</span></div>
+            <div class="metric-bar"><div class="metric-fill" style="--w: 0.97"></div></div>
+          </div>
+          <div class="metric-row">
+            <div class="metric-header"><span>Material Adhesion</span><span>94%</span></div>
+            <div class="metric-bar"><div class="metric-fill" style="--w: 0.94"></div></div>
+          </div>
+          <div class="metric-row">
+            <div class="metric-header"><span>AI Correction Rate</span><span>89%</span></div>
+            <div class="metric-bar"><div class="metric-fill" style="--w: 0.89"></div></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     TESTIMONIALS
+============================================================ -->
+<section id="testimonials" class="section" style="background: var(--bg-secondary);">
+  <div class="container">
+    <div class="reveal"><span class="section-label">Client Voices</span></div>
+    <div class="reveal reveal-delay-1"><h2>Trusted by the <span class="gradient-text">World's Best</span></h2></div>
+
+    <div class="testimonials-grid">
+
+      <div class="testimonial-card reveal">
+        <div class="stars">
+          <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+        </div>
+        <p class="testimonial-text">"The X1 Pro reduced our prototype-to-production cycle from 3 weeks to 4 days. The dimensional accuracy on Inconel parts is something I've never seen outside of CNC machining."</p>
+        <div class="testimonial-author">
+          <img src="https://picsum.photos/seed/engineer-avatar-1/80/80" alt="Dr. Sarah Chen" class="author-avatar">
+          <div>
+            <div class="author-name">Dr. Sarah Chen</div>
+            <div class="author-role">Lead Engineer, AeroTech Industries</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card reveal reveal-delay-1">
+        <div class="stars">
+          <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+        </div>
+        <p class="testimonial-text">"We run a fleet of 24 X1 Pros via ForgeCloud. Zero downtime in 14 months. The AI calibration feature alone has saved us $380K in material waste this year."</p>
+        <div class="testimonial-author">
+          <img src="https://picsum.photos/seed/executive-avatar-2/80/80" alt="Marcus Rodriguez" class="author-avatar">
+          <div>
+            <div class="author-name">Marcus Rodriguez</div>
+            <div class="author-role">VP Manufacturing, NovaMed Devices</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card reveal reveal-delay-2">
+        <div class="stars">
+          <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+        </div>
+        <p class="testimonial-text">"As a design studio we switched to the FORGEVOX Studio series. The surface finish quality means parts come off the machine ready for client presentations. It's a game-changer."</p>
+        <div class="testimonial-author">
+          <img src="https://picsum.photos/seed/designer-avatar-3/80/80" alt="Yuki Tanaka" class="author-avatar">
+          <div>
+            <div class="author-name">Yuki Tanaka</div>
+            <div class="author-role">Creative Director, Tanaka Design Lab</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Logos strip -->
+    <div class="reveal" style="margin-top: 64px; text-align: center;">
+      <p style="font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 36px; -webkit-text-fill-color: unset;">Trusted by leading organizations worldwide</p>
+      <div style="display: flex; gap: 48px; justify-content: center; flex-wrap: wrap; align-items: center; opacity: 0.4; filter: grayscale(100%) brightness(2);">
+        <img src="https://picsum.photos/seed/logo-company-a/120/40" alt="Partner" style="height: 28px; object-fit: contain; border-radius: 4px;">
+        <img src="https://picsum.photos/seed/logo-company-b/120/40" alt="Partner" style="height: 28px; object-fit: contain; border-radius: 4px;">
+        <img src="https://picsum.photos/seed/logo-company-c/120/40" alt="Partner" style="height: 28px; object-fit: contain; border-radius: 4px;">
+        <img src="https://picsum.photos/seed/logo-company-d/120/40" alt="Partner" style="height: 28px; object-fit: contain; border-radius: 4px;">
+        <img src="https://picsum.photos/seed/logo-company-e/120/40" alt="Partner" style="height: 28px; object-fit: contain; border-radius: 4px;">
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================================
+     CTA BAND
+============================================================ -->
+<section id="cta">
+  <div class="cta-bg"></div>
+  <div class="cta-glow"></div>
+  <div class="mesh-bg"></div>
+  <div class="container">
+    <div class="cta-content reveal">
+      <div class="reveal"><span class="section-label" style="justify-content: center;">Start Building</span></div>
+      <h2 style="margin-top: 12px;">Ready to <span class="gradient-text">Forge</span><br>Your Future?</h2>
+      <p>Join 4,000+ innovators using FORGEVOX to manufacture what others can only imagine. Get a personalized demo and ROI analysis from our engineering team.</p>
+      <div class="cta-actions">
+        <a href="#" class="btn-xl">Request a Demo</a>
+        <a href="#" class="btn-xl-outline">Download Spec Sheet</a>
+      </div>
+      <div class="cta-trust">
+        <div class="trust-item"><span class="trust-icon">✓</span> 30-day pilot program</div>
+        <div class="trust-item">
